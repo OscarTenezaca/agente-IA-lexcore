@@ -1,152 +1,162 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Asistente Legal LEXCORE</title>
   <style>
     body {
-      background-color: #f5f8fc;
-      font-family: Arial, sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f4f6f9;
+      overflow: hidden;
     }
-    header {
-      background-color: #24344d;
-      color: #fff;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: bold;
-    }
-    #chatbox {
-      max-width: 800px;
-      margin: 2rem auto;
-      padding: 1rem;
-      background: #fff;
-      border-radius: 10px;
-      min-height: 300px;
+
+    #chat {
       display: flex;
       flex-direction: column;
+      height: 100vh;
+      padding: 1rem;
+      box-sizing: border-box;
+      overflow-y: auto;
     }
-    .message {
-      margin: 0.5rem 0;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      max-width: 80%;
+
+    .mensaje {
+      max-width: 75%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 8px;
+      line-height: 1.4;
     }
-    .user {
-      background-color: #4d90fe;
-      color: white;
+
+    .usuario {
       align-self: flex-end;
+      background-color: #4088f0;
+      color: white;
     }
-    .bot {
-      background-color: #f0f0f0;
+
+    .ia {
       align-self: flex-start;
+      background-color: #eeeeee;
     }
-    #input-container {
+
+    #entrada {
       display: flex;
-      justify-content: center;
-      margin-top: 1rem;
+      padding: 10px;
+      background-color: #fff;
+      box-shadow: 0 -1px 4px rgba(0, 0, 0, 0.1);
     }
-    input[type="text"] {
-      width: 70%;
-      padding: 0.75rem;
-      border-radius: 25px;
+
+    #texto {
+      flex-grow: 1;
+      padding: 8px;
+      border-radius: 5px;
       border: 1px solid #ccc;
       font-size: 1rem;
     }
-    button {
-      background-color: #2563eb;
+
+    #enviar {
+      margin-left: 10px;
+      padding: 8px 16px;
+      background-color: #2c6dd5;
       color: white;
       border: none;
-      padding: 0.75rem 1.5rem;
-      margin-left: 1rem;
-      border-radius: 25px;
-      font-size: 1rem;
+      border-radius: 5px;
       cursor: pointer;
     }
-    .footer-note {
-      font-size: 0.8rem;
-      color: #555;
+
+    #enviar:hover {
+      background-color: #1e4db8;
+    }
+
+    h1 {
       text-align: center;
-      margin-top: 2rem;
-      padding: 0 1rem;
+      color: #2c3e50;
+      margin-top: 15px;
     }
   </style>
 </head>
 <body>
-  <header>Asistente Legal LEXCORE</header>
-  <div id="chatbox">
-    <div class="message bot">¡Hola! Soy tu asistente legal de LEXCORE. ¿En qué puedo ayudarte hoy?</div>
-  </div>
-  <div id="input-container">
-    <input type="text" id="user-input" placeholder="Escribe tu pregunta aquí...">
-    <button onclick="sendMessage()">Enviar</button>
-  </div>
-  <div class="footer-note">
-    *Este bot es un asistente informativo y no constituye asesoría legal vinculante. Para una consulta personalizada, por favor, contacta a LEXCORE.*
+  <h1>Asistente Legal LEXCORE</h1>
+
+  <div id="chat"></div>
+
+  <div id="entrada">
+    <input type="text" id="texto" placeholder="Escribe tu consulta..." />
+    <button id="enviar">Enviar</button>
   </div>
 
   <script>
-    const knowledgeBase = {
+    const chat = document.getElementById("chat");
+    const texto = document.getElementById("texto");
+    const enviar = document.getElementById("enviar");
+
+    const respuestas = {
       "hola": "¡Hola! ¿Cómo estás? Estoy aquí para ayudarte con tus preguntas legales. 😊",
-      "problema": "Tranquil@, estoy aquí para ayudarte paso a paso. Cuéntame más sobre tu situación.",
-      "pension": "La pensión alimenticia en Ecuador se calcula según la tabla del MIES. ¿Deseas saber cuánto te corresponde pagar o recibir?",
-      "divorcio": "Puedes divorciarte por mutuo acuerdo o por causal. ¿Quieres saber qué documentos necesitas?",
-      "herencia": "La sucesión puede ser testamentaria o intestada. ¿Te interesa conocer el orden de herederos?",
-      "arriendo": "¿Tienes problemas con un inquilino o propietario? Las reglas del arriendo están reguladas por el Código Civil y la Ley de Inquilinato.",
-      "contrato": "¿Quieres hacer o revisar un contrato? Puedo darte los puntos básicos que no deben faltar.",
-      "datos personales": "Tienes derecho a saber cómo usan tus datos. ¿Quieres saber cómo ejercer tu derecho de acceso o eliminación?",
-      "violencia": "No estás sol@. Si eres víctima de violencia intrafamiliar, puedes pedir medidas de protección urgentes. ¿Quieres saber cómo?",
-      "despido": "Un despido debe ser justificado. ¿Quieres saber si aplica indemnización en tu caso?",
-      "notaria": "Puedes realizar trámites como poderes, testamentos o escrituras en notarías. ¿Te interesa saber requisitos o costos?",
-      "inquilino": "Un inquilino tiene derecho a un contrato escrito y a recibir el inmueble en buen estado. ¿Qué necesitas saber?",
-      "inquilinato": "La Ley de Inquilinato protege a ambas partes. ¿Tienes una duda específica sobre renovación, garantía o desalojo?",
-      "tenencia": "La tenencia de hijos puede definirse de mutuo acuerdo o judicialmente. ¿Buscas orientación sobre custodia compartida o visitas?",
-      "alimentos": "Los alimentos cubren vivienda, salud, educación y más. ¿Quieres saber cómo solicitarlos o modificarlos?",
-      "trabajo": "¿Tienes un problema laboral? Puedo ayudarte con temas de contratos, pagos, despidos y derechos del trabajador.",
-      "sociedad": "Las sociedades en Ecuador pueden ser S.A., Cía. Ltda., etc. ¿Deseas constituir una o entender sus obligaciones?",
-      "impuestos": "¿Tienes dudas sobre SRI, RUC, IVA o impuesto a la renta? Puedo darte una guía básica.",
-      "denuncia": "Puedes poner una denuncia penal en la Fiscalía o en línea. ¿Quieres saber cómo iniciar el proceso?",
-      "juez": "Un juez debe resolver conforme a la Constitución y la ley. ¿Deseas saber cómo apelar una decisión?"
+      "problema": "Tranquil@, estoy aquí para ayudarte. ¿Podrías contarme un poco más sobre tu situación?",
+      "contrato": "Un contrato es un acuerdo legal entre dos o más partes. ¿Qué deseas saber específicamente?",
+      "divorcio": "El divorcio en Ecuador puede ser por mutuo acuerdo o por causal. ¿Te gustaría saber los requisitos o el proceso?",
+      "pensión alimenticia": "La pensión alimenticia se calcula según la tabla del MIES. ¿Conoces el ingreso del alimentante?",
+      "herencia": "¿Tu consulta es sobre herederos forzosos, testamento, o partición de bienes?",
+      "despido": "El despido puede ser intempestivo, con o sin causa. ¿Deseas calcular una liquidación o saber tus derechos?",
+      "inquilino": "La Ley de Inquilinato establece derechos para arrendadores e inquilinos. ¿Tienes problemas con el contrato o los pagos?",
+      "constitución": "La Constitución del Ecuador garantiza derechos fundamentales. ¿Te interesa algún artículo en particular?",
+      "datos personales": "La LOPDP protege tus datos. ¿Tu consulta es sobre consentimiento, portabilidad o uso indebido de datos?",
+      "vivienda": "El derecho a la vivienda está en el art. 30 de la Constitución. ¿Tu caso es por arriendo, compra o conflicto de dominio?",
+      "accidente": "¿Fue un accidente laboral, de tránsito o de otro tipo? Puedo darte información sobre responsabilidad y compensaciones.",
+      "demanda": "¿Qué tipo de demanda deseas presentar? Puedo ayudarte con demandas civiles, laborales, de alimentos, etc.",
+      "notaría": "Puedes realizar trámites notariales como promesas de compraventa, testamentos, poderes. ¿Cuál necesitas?",
+      "sri": "El SRI regula tributos y facturación. ¿Tu duda es sobre RUC, facturas electrónicas o impuestos?",
+      "empresa": "¿Buscas constituir una compañía o conocer tipos societarios en Ecuador?",
+      "deuda": "¿La deuda es con un banco, cooperativa, proveedor? ¿Deseas saber sobre prescripción o cómo negociar?",
+      "lexcore": "LEXCORE es una firma que ayuda a empresas y personas a resolver problemas legales de forma clara y moderna. ✨"
     };
 
-    function sendMessage() {
-      const input = document.getElementById("user-input");
-      const chatbox = document.getElementById("chatbox");
-      const userMessage = input.value.trim().toLowerCase();
-      if (!userMessage) return;
+    function responder(mensaje) {
+      const msg = mensaje.toLowerCase();
+      let respuesta = respuestas[msg] || "Lo siento, no tengo una respuesta exacta para eso. ¿Podrías reformular tu consulta? O si deseas contactar a un abogado, visita: www.lexcore.services";
 
-      // Mostrar mensaje del usuario
-      const userDiv = document.createElement("div");
-      userDiv.className = "message user";
-      userDiv.textContent = input.value;
-      chatbox.appendChild(userDiv);
-
-      // Buscar respuesta
-      let found = false;
-      let response = "";
-      for (const key in knowledgeBase) {
-        if (userMessage.includes(key)) {
-          response = knowledgeBase[key];
-          found = true;
-          break;
-        }
+      // Empatía básica
+      if (msg.includes("ayuda") || msg.includes("necesito") || msg.includes("urgente")) {
+        respuesta = "Estoy contigo 💪. Cuéntame más sobre tu situación y haré lo posible por orientarte.";
       }
 
-      // Respuesta por defecto
-      if (!found) {
-        response = "Lo siento, no encontré una respuesta específica a tu consulta. Pero estoy aquí para ayudarte. ¿Puedes darme más detalles o reformular tu pregunta?";
-      }
-
-      const botDiv = document.createElement("div");
-      botDiv.className = "message bot";
-      botDiv.textContent = response;
-      chatbox.appendChild(botDiv);
-      input.value = "";
-      chatbox.scrollTop = chatbox.scrollHeight;
+      agregarMensaje(mensaje, "usuario");
+      setTimeout(() => {
+        agregarMensaje(respuesta, "ia");
+      }, 500);
     }
+
+    function agregarMensaje(texto, tipo) {
+      const div = document.createElement("div");
+      div.classList.add("mensaje", tipo);
+      div.innerText = texto;
+      chat.appendChild(div);
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    enviar.addEventListener("click", () => {
+      if (texto.value.trim() !== "") {
+        responder(texto.value.trim());
+        texto.value = "";
+      }
+    });
+
+    texto.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        enviar.click();
+      }
+    });
+
+    // Ocultar título si el parámetro sin_titulo=true está presente
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("sin_titulo") === "true") {
+      const titulo = document.querySelector("h1");
+      if (titulo) titulo.style.display = "none";
+    }
+
+    // Mensaje inicial
+    agregarMensaje("¡Hola! Soy tu asistente legal de LEXCORE. ¿En qué puedo ayudarte hoy?", "ia");
   </script>
 </body>
 </html>
