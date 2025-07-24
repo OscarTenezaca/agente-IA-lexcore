@@ -2,167 +2,126 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>LEXI - Asistente Legal</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
       margin: 0;
-      padding: 0;
+      font-family: 'Segoe UI', sans-serif;
       background-color: #f4f7fb;
     }
-
     .chat-container {
       max-width: 700px;
       margin: 0 auto;
-      padding: 20px;
-      background-color: #f4f7fb;
+      padding: 1rem;
     }
-
-    .mensaje {
-      padding: 10px 15px;
+    .message {
       margin: 10px 0;
-      border-radius: 12px;
+      padding: 10px 15px;
+      border-radius: 10px;
       max-width: 85%;
-      word-wrap: break-word;
+      line-height: 1.5;
     }
-
-    .usuario {
-      background-color: #448aff;
+    .bot {
+      background-color: #f1f1f1;
+      align-self: flex-start;
+    }
+    .user {
+      background-color: #4f8df7;
       color: white;
       align-self: flex-end;
       margin-left: auto;
     }
-
-    .ia {
-      background-color: #eeeeee;
-      color: #000;
-      align-self: flex-start;
-      margin-right: auto;
-    }
-
-    .mensajes {
+    .chat-box {
       display: flex;
       flex-direction: column;
-      height: auto;
-      overflow-y: hidden;
     }
-
-    .input-container {
+    .input-area {
       display: flex;
-      margin-top: 15px;
+      margin-top: 1rem;
     }
-
-    input[type="text"] {
+    input {
       flex: 1;
       padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 8px 0 0 8px;
+      border-radius: 6px 0 0 6px;
       font-size: 16px;
     }
-
     button {
       padding: 10px 20px;
       border: none;
-      background-color: #1565c0;
+      background-color: #4f8df7;
       color: white;
-      border-radius: 0 8px 8px 0;
+      border-radius: 0 6px 6px 0;
       cursor: pointer;
-      font-size: 16px;
     }
-
     button:hover {
-      background-color: #0d47a1;
+      background-color: #3367d6;
     }
   </style>
 </head>
 <body>
   <div class="chat-container">
-    <div id="mensajes" class="mensajes"></div>
-    <div class="input-container">
-      <input type="text" id="entrada" placeholder="Escribe tu consulta legal aquí..." onkeypress="if(event.key==='Enter') enviarMensaje()" />
-      <button onclick="enviarMensaje()">Enviar</button>
+    <div class="chat-box" id="chatBox">
+      <div class="message bot">¡Hola! Soy LEXI, tu asistente legal. ¿En qué puedo ayudarte hoy?</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Escribe tu mensaje..." />
+      <button onclick="sendMessage()">Enviar</button>
     </div>
   </div>
 
   <script>
-    function agregarMensaje(texto, clase) {
-      const div = document.createElement("div");
-      div.classList.add("mensaje", clase);
-      div.textContent = texto;
-      document.getElementById("mensajes").appendChild(div);
-      div.scrollIntoView({ behavior: "smooth" });
-    }
+    const chatBox = document.getElementById('chatBox');
 
-    function enviarMensaje() {
-      const entrada = document.getElementById("entrada");
-      const mensaje = entrada.value.trim();
-      if (mensaje) {
-        responder(mensaje);
-        entrada.value = "";
-      }
-    }
+    const keywordsMap = [
+      { keywords: ["hola", "buenas", "saludos"], response: "¡Hola! Qué gusto saludarte. ¿En qué puedo ayudarte hoy? 😊" },
+      { keywords: ["ayuda", "auxilio", "no sé"], response: "Tranquil@, estoy aquí para orientarte. Cuéntame tu situación con calma." },
+      { keywords: ["divorcio", "divorciar", "separar"], response: "En Ecuador puedes divorciarte por mutuo consentimiento o por causal. ¿Hay hijos o bienes en común?" },
+      { keywords: ["alimentos", "manutención", "pensión"], response: "Puedes iniciar una demanda de alimentos. Se calcula en función del ingreso y número de hijos. ¿Te gustaría saber los pasos?" },
+      { keywords: ["violencia", "agresión", "golpe", "abuso"], response: "Lamento mucho que estés pasando por eso. Puedes acudir a una Unidad Judicial para solicitar medidas de protección urgentes." },
+      { keywords: ["herencia", "testamento", "sucesión"], response: "Las herencias pueden ser intestadas o testadas. ¿Sabes si la persona dejó testamento?" },
+      { keywords: ["inquilino", "arriendo", "alquiler"], response: "El arriendo se regula por la Ley de Inquilinato. ¿Tu duda es como arrendador o inquilino?" },
+      { keywords: ["despido", "trabajo", "laboral"], response: "Si fuiste despedido sin causa, puedes exigir indemnización. ¿Te entregaron carta de despido?" },
+      { keywords: ["protección de datos", "datos personales", "lopdp"], response: "Toda empresa en Ecuador debe cumplir la Ley Orgánica de Protección de Datos. ¿Eres empresa o titular de datos?" },
+      { keywords: ["fiscalía", "denunciar", "penal"], response: "Puedes denunciar delitos en la Fiscalía o Policía Judicial. ¿Qué tipo de delito deseas denunciar?" },
+      { keywords: ["gracias", "muchas gracias"], response: "¡Con gusto! Estoy aquí cuando me necesites." },
+      { keywords: ["lexcore", "contactar", "abogado"], response: "Puedes contactar a LEXCORE desde nuestra web o WhatsApp para una asesoría personalizada. ¿Te doy el enlace?" },
+    ];
 
-    function responder(mensaje) {
-      const msg = mensaje.toLowerCase();
-      let respuesta = null;
+    function sendMessage() {
+      const input = document.getElementById('userInput');
+      const userText = input.value.trim();
+      if (userText === "") return;
 
-      // Coincidencias generales
-      if (msg.includes("hola") || msg.includes("buenos días") || msg.includes("buenas tardes")) {
-        respuesta = "¡Hola! ¿Cómo estás? Estoy aquí para ayudarte con tus preguntas legales. 😊";
-      } else if (msg.includes("gracias") || msg.includes("muchas gracias")) {
-        respuesta = "¡Con gusto! Si necesitas algo más, aquí estaré. 🙌";
-      } else if (msg.includes("adiós") || msg.includes("hasta luego") || msg.includes("chau")) {
-        respuesta = "¡Hasta pronto! Espero haberte ayudado.";
-      }
+      appendMessage(userText, "user");
 
-      // Temas legales
-      else if (msg.includes("divorcio")) {
-        respuesta = "El divorcio puede ser por mutuo acuerdo o por causal. ¿Te interesa saber los pasos, requisitos o tiempos?";
-      } else if (msg.includes("contrato")) {
-        respuesta = "¿Te refieres a un contrato civil, laboral o de arrendamiento? Estoy aquí para explicarlo.";
-      } else if (msg.includes("despido") || msg.includes("liquidación")) {
-        respuesta = "El despido intempestivo da derecho a una liquidación. ¿Quieres saber cómo calcularla?";
-      } else if (msg.includes("herencia") || msg.includes("testamento")) {
-        respuesta = "Las herencias se rigen por la ley civil. ¿Tu duda es sobre la sucesión, reparto o derechos de herederos?";
-      } else if (msg.includes("pensión") || msg.includes("alimenticia")) {
-        respuesta = "¿Quieres saber cuánto te corresponde pagar o recibir por pensión alimenticia según el SBU?";
-      } else if (msg.includes("inquilino") || msg.includes("arriendo") || msg.includes("alquiler")) {
-        respuesta = "La Ley de Inquilinato establece obligaciones para inquilinos y arrendadores. ¿Cuál es tu caso?";
-      } else if (msg.includes("datos personales") || msg.includes("lopdp")) {
-        respuesta = "La Ley Orgánica de Protección de Datos Personales garantiza tu derecho a decidir sobre tu información. ¿Cuál es tu inquietud?";
-      } else if (msg.includes("sri") || msg.includes("factura") || msg.includes("ruc")) {
-        respuesta = "¿Necesitas información sobre facturación electrónica, inscripción en el RUC o declaraciones?";
-      } else if (msg.includes("dominio") || msg.includes("propiedad") || msg.includes("vivienda")) {
-        respuesta = "¿Se trata de inscripción de dominio, promesa de compraventa o algún conflicto con tu propiedad?";
-      } else if (msg.includes("notaría") || msg.includes("escritura") || msg.includes("poder")) {
-        respuesta = "¿Vas a realizar una escritura de compraventa, un poder o algún otro trámite notarial?";
-      } else if (msg.includes("empresa") || msg.includes("sociedad") || msg.includes("comercial")) {
-        respuesta = "Puedes crear una empresa en Ecuador como persona natural o jurídica. ¿Quieres conocer el proceso?";
-      } else if (msg.includes("constitución") || msg.includes("derechos")) {
-        respuesta = "La Constitución reconoce derechos como salud, educación, ambiente sano y más. ¿Qué artículo deseas consultar?";
-      }
+      const lowerText = userText.toLowerCase();
+      const response = findResponse(lowerText);
 
-      // Ayuda emocional
-      else if (msg.includes("ayuda") || msg.includes("problema") || msg.includes("necesito")) {
-        respuesta = "Tranquil@, estoy aquí para ayudarte. Cuéntame más detalles para darte la mejor orientación legal posible.";
-      }
-
-      // Sin coincidencia
-      if (!respuesta) {
-        respuesta = "Lo siento, no encontré una respuesta específica. ¿Podrías darme más detalles o reformular tu consulta?";
-      }
-
-      agregarMensaje(mensaje, "usuario");
       setTimeout(() => {
-        agregarMensaje(respuesta, "ia");
-      }, 400);
+        appendMessage(response, "bot");
+      }, 500);
+
+      input.value = "";
     }
 
-    // Mensaje inicial
-    window.onload = () => {
-      agregarMensaje("¡Hola! Soy tu asistente legal. ¿En qué puedo ayudarte hoy?", "ia");
-    };
+    function findResponse(userMessage) {
+      for (const item of keywordsMap) {
+        if (item.keywords.some(k => userMessage.includes(k))) {
+          return item.response;
+        }
+      }
+      return "No encontré una respuesta clara a tu consulta, pero estoy aquí para ayudarte. ¿Puedes explicarme con más detalle?";
+    }
+
+    function appendMessage(text, type) {
+      const message = document.createElement("div");
+      message.className = `message ${type}`;
+      message.textContent = text;
+      chatBox.appendChild(message);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
   </script>
 </body>
 </html>
