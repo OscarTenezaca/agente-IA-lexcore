@@ -1,184 +1,152 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Asistente Legal LEXI</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asistente Legal LEXCORE</title>
   <style>
     body {
-      font-family: 'Segoe UI', sans-serif;
-      background-color: #eef2f6;
+      background-color: #f5f8fc;
+      font-family: Arial, sans-serif;
       margin: 0;
       padding: 0;
     }
-    .chatbot-container {
-      max-width: 700px;
-      margin: 40px auto;
-      background: #fff;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    }
-    .chat-header {
-      background-color: #2c3e50;
-      color: white;
+    header {
+      background-color: #24344d;
+      color: #fff;
+      padding: 1rem;
       text-align: center;
-      padding: 15px;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       font-weight: bold;
     }
-    .chat-messages {
-      height: 440px;
-      overflow-y: auto;
-      padding: 20px;
-      background-color: #f9fafb;
+    #chatbox {
+      max-width: 800px;
+      margin: 2rem auto;
+      padding: 1rem;
+      background: #fff;
+      border-radius: 10px;
+      min-height: 300px;
       display: flex;
       flex-direction: column;
-      gap: 15px;
     }
-    .message-bubble {
-      max-width: 75%;
-      padding: 12px 18px;
-      border-radius: 18px;
-      line-height: 1.5;
-      word-wrap: break-word;
+    .message {
+      margin: 0.5rem 0;
+      padding: 0.75rem 1rem;
+      border-radius: 10px;
+      max-width: 80%;
     }
-    .message-user {
-      align-self: flex-end;
-      background-color: #5d9cec;
+    .user {
+      background-color: #4d90fe;
       color: white;
-      border-bottom-right-radius: 4px;
+      align-self: flex-end;
     }
-    .message-ai {
+    .bot {
+      background-color: #f0f0f0;
       align-self: flex-start;
-      background-color: #ffffff;
-      color: #333333;
-      border-bottom-left-radius: 4px;
-      border: 1px solid #e0e0e0;
     }
-    .chat-input-area {
+    #input-container {
       display: flex;
-      padding: 15px;
-      border-top: 1px solid #ddd;
-      background-color: #fff;
+      justify-content: center;
+      margin-top: 1rem;
     }
-    .chat-input-area input[type="text"] {
-      flex: 1;
-      padding: 10px 15px;
-      font-size: 1rem;
-      border: 1px solid #ccc;
+    input[type="text"] {
+      width: 70%;
+      padding: 0.75rem;
       border-radius: 25px;
-      margin-right: 10px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
     }
-    .chat-input-area button {
+    button {
       background-color: #2563eb;
       color: white;
       border: none;
+      padding: 0.75rem 1.5rem;
+      margin-left: 1rem;
       border-radius: 25px;
-      padding: 10px 20px;
+      font-size: 1rem;
       cursor: pointer;
     }
-    .chat-input-area button:hover {
-      background-color: #1e4bb8;
+    .footer-note {
+      font-size: 0.8rem;
+      color: #555;
+      text-align: center;
+      margin-top: 2rem;
+      padding: 0 1rem;
     }
   </style>
 </head>
 <body>
-  <div class="chatbot-container">
-    <div class="chat-header">Asistente Legal LEXI</div>
-    <div class="chat-messages" id="chatMessages">
-      <div class="message-bubble message-ai">
-        ¡Hola! Soy tu asistente legal LEXI. Estoy aquí para ayudarte. ¿Qué tema legal te preocupa hoy?
-      </div>
-    </div>
-    <div class="chat-input-area">
-      <input type="text" id="chatInput" placeholder="Escribe tu consulta aquí..." />
-      <button onclick="sendMessage()">Enviar</button>
-    </div>
+  <header>Asistente Legal LEXCORE</header>
+  <div id="chatbox">
+    <div class="message bot">¡Hola! Soy tu asistente legal de LEXCORE. ¿En qué puedo ayudarte hoy?</div>
+  </div>
+  <div id="input-container">
+    <input type="text" id="user-input" placeholder="Escribe tu pregunta aquí...">
+    <button onclick="sendMessage()">Enviar</button>
+  </div>
+  <div class="footer-note">
+    *Este bot es un asistente informativo y no constituye asesoría legal vinculante. Para una consulta personalizada, por favor, contacta a LEXCORE.*
   </div>
 
   <script>
-    const chatInput = document.getElementById("chatInput");
-    const chatMessages = document.getElementById("chatMessages");
-
-    const knowledgeBase = [
-      // EMOCIONALES
-      { keywords: ["hola", "buenas", "saludos"], response: "¡Hola! ¿En qué puedo ayudarte hoy? Estoy aquí para orientarte legalmente." },
-      { keywords: ["ayuda", "estresado", "triste", "ansioso", "problema"], response: "Tranquil@, respira profundo. Estoy aquí para guiarte paso a paso." },
-      { keywords: ["no sé", "confundido", "miedo", "nervioso"], response: "No te preocupes. Dime lo que sabes y yo te ayudo con lo demás." },
-
-      // DERECHO FAMILIAR
-      { keywords: ["divorcio", "separación", "custodia", "tenencia", "régimen de visitas"], response: "En Ecuador puedes divorciarte por mutuo acuerdo o por causal. La custodia y visitas se regulan judicialmente o por acuerdo entre padres." },
-      { keywords: ["pensión", "alimentos", "alimenticia"], response: "La pensión alimenticia se basa en las tablas del Consejo de la Judicatura, según el número de hijos y salario del alimentante." },
-
-      // DERECHO PENAL
-      { keywords: ["delito", "acusación", "denuncia", "robo", "amenaza"], response: "Si fuiste víctima de un delito, puedes presentar una denuncia en la Fiscalía. ¿Qué ocurrió exactamente?" },
-      { keywords: ["violencia", "maltrato", "agresión", "vif"], response: "Puedes solicitar medidas de protección por violencia intrafamiliar en cualquier unidad judicial. Es confidencial y gratuito." },
-
-      // DERECHO CIVIL Y CONTRATOS
-      { keywords: ["herencia", "testamento", "sucesión"], response: "Las herencias pueden ser intestadas o testadas. Se tramitan en notaría o mediante juicio sucesorio." },
-      { keywords: ["contrato", "compraventa", "préstamo", "arrendamiento"], response: "Un contrato válido debe tener consentimiento, objeto lícito y causa válida. ¿De qué contrato se trata?" },
-
-      // INQUILINATO
-      { keywords: ["arriendo", "inquilino", "arrendador", "desahucio"], response: "Los contratos de arriendo se rigen por la Ley de Inquilinato. Puedes terminar un contrato por mutuo acuerdo o por desahucio judicial." },
-
-      // PROPIEDAD HORIZONTAL
-      { keywords: ["propiedad horizontal", "condominio", "PH"], response: "La propiedad horizontal se regula por ordenanzas y el reglamento interno. La administración la lleva el presidente elegido en asamblea." },
-
-      // DERECHO LABORAL
-      { keywords: ["trabajo", "laboral", "despido", "liquidación"], response: "El despido intempestivo genera derecho a indemnización. La liquidación debe incluir vacaciones, décimos y bonificaciones pendientes." },
-
-      // DERECHO EMPRESARIAL
-      { keywords: ["empresa", "sociedad", "constitución", "ruc"], response: "Para crear una empresa necesitas constituirla en la Supercias, obtener RUC en el SRI y abrir una cuenta bancaria a nombre de la sociedad." },
-
-      // DERECHO DEL CONSUMIDOR
-      { keywords: ["garantía", "compra", "defecto", "devolución"], response: "Tienes derecho a devolución o reparación dentro del tiempo de garantía. Aplica según la Ley de Defensa del Consumidor." },
-
-      // DERECHO DE TRÁNSITO
-      { keywords: ["multa", "tránsito", "accidente", "infracción"], response: "Puedes consultar y apelar multas en la ANT. En caso de accidente, reporta al 911 y busca un parte policial." },
-
-      // NOTARIAL
-      { keywords: ["notaría", "escritura", "poder", "acta", "matrimonio civil"], response: "Las notarías autentican documentos. Puedes hacer escrituras de compraventa, poderes, testamentos y matrimonios civiles." },
-
-      // PROTECCIÓN DE DATOS
-      { keywords: ["datos personales", "protección de datos", "lopdp"], response: "La Ley Orgánica de Protección de Datos te permite controlar cómo se usa tu información. Puedes exigir acceso, corrección y eliminación." }
-    ];
-
-    function appendMessage(sender, text) {
-      const msg = document.createElement("div");
-      msg.classList.add("message-bubble", sender === "user" ? "message-user" : "message-ai");
-      msg.textContent = text;
-      chatMessages.appendChild(msg);
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
+    const knowledgeBase = {
+      "hola": "¡Hola! ¿Cómo estás? Estoy aquí para ayudarte con tus preguntas legales. 😊",
+      "problema": "Tranquil@, estoy aquí para ayudarte paso a paso. Cuéntame más sobre tu situación.",
+      "pension": "La pensión alimenticia en Ecuador se calcula según la tabla del MIES. ¿Deseas saber cuánto te corresponde pagar o recibir?",
+      "divorcio": "Puedes divorciarte por mutuo acuerdo o por causal. ¿Quieres saber qué documentos necesitas?",
+      "herencia": "La sucesión puede ser testamentaria o intestada. ¿Te interesa conocer el orden de herederos?",
+      "arriendo": "¿Tienes problemas con un inquilino o propietario? Las reglas del arriendo están reguladas por el Código Civil y la Ley de Inquilinato.",
+      "contrato": "¿Quieres hacer o revisar un contrato? Puedo darte los puntos básicos que no deben faltar.",
+      "datos personales": "Tienes derecho a saber cómo usan tus datos. ¿Quieres saber cómo ejercer tu derecho de acceso o eliminación?",
+      "violencia": "No estás sol@. Si eres víctima de violencia intrafamiliar, puedes pedir medidas de protección urgentes. ¿Quieres saber cómo?",
+      "despido": "Un despido debe ser justificado. ¿Quieres saber si aplica indemnización en tu caso?",
+      "notaria": "Puedes realizar trámites como poderes, testamentos o escrituras en notarías. ¿Te interesa saber requisitos o costos?",
+      "inquilino": "Un inquilino tiene derecho a un contrato escrito y a recibir el inmueble en buen estado. ¿Qué necesitas saber?",
+      "inquilinato": "La Ley de Inquilinato protege a ambas partes. ¿Tienes una duda específica sobre renovación, garantía o desalojo?",
+      "tenencia": "La tenencia de hijos puede definirse de mutuo acuerdo o judicialmente. ¿Buscas orientación sobre custodia compartida o visitas?",
+      "alimentos": "Los alimentos cubren vivienda, salud, educación y más. ¿Quieres saber cómo solicitarlos o modificarlos?",
+      "trabajo": "¿Tienes un problema laboral? Puedo ayudarte con temas de contratos, pagos, despidos y derechos del trabajador.",
+      "sociedad": "Las sociedades en Ecuador pueden ser S.A., Cía. Ltda., etc. ¿Deseas constituir una o entender sus obligaciones?",
+      "impuestos": "¿Tienes dudas sobre SRI, RUC, IVA o impuesto a la renta? Puedo darte una guía básica.",
+      "denuncia": "Puedes poner una denuncia penal en la Fiscalía o en línea. ¿Quieres saber cómo iniciar el proceso?",
+      "juez": "Un juez debe resolver conforme a la Constitución y la ley. ¿Deseas saber cómo apelar una decisión?"
+    };
 
     function sendMessage() {
-      const userText = chatInput.value.trim();
-      if (!userText) return;
-      appendMessage("user", userText);
-      chatInput.value = "";
+      const input = document.getElementById("user-input");
+      const chatbox = document.getElementById("chatbox");
+      const userMessage = input.value.trim().toLowerCase();
+      if (!userMessage) return;
 
-      const lowerText = userText.toLowerCase();
-      let response = null;
+      // Mostrar mensaje del usuario
+      const userDiv = document.createElement("div");
+      userDiv.className = "message user";
+      userDiv.textContent = input.value;
+      chatbox.appendChild(userDiv);
 
-      for (const item of knowledgeBase) {
-        if (item.keywords.some(kw => lowerText.includes(kw))) {
-          response = item.response;
+      // Buscar respuesta
+      let found = false;
+      let response = "";
+      for (const key in knowledgeBase) {
+        if (userMessage.includes(key)) {
+          response = knowledgeBase[key];
+          found = true;
           break;
         }
       }
 
-      if (!response) {
-        response = "Lo siento, por ahora no tengo una respuesta específica para eso. ¿Puedes intentar reformularlo? También puedo ayudarte con pensiones, divorcios, violencia, contratos, herencias, trabajo y más.";
+      // Respuesta por defecto
+      if (!found) {
+        response = "Lo siento, no encontré una respuesta específica a tu consulta. Pero estoy aquí para ayudarte. ¿Puedes darme más detalles o reformular tu pregunta?";
       }
 
-      response += "\\n\\n*LEXI es un asistente informativo y no sustituye asesoría legal personalizada. Para atención directa, por favor contacta a LEXCORE.*";
-      appendMessage("ai", response);
+      const botDiv = document.createElement("div");
+      botDiv.className = "message bot";
+      botDiv.textContent = response;
+      chatbox.appendChild(botDiv);
+      input.value = "";
+      chatbox.scrollTop = chatbox.scrollHeight;
     }
-
-    chatInput.addEventListener("keypress", function(event) {
-      if (event.key === "Enter") sendMessage();
-    });
   </script>
 </body>
 </html>
