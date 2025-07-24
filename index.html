@@ -1,0 +1,379 @@
+<style>
+    /* Importación de fuente Inter */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+    /* Estilos generales del contenedor del chatbot */
+    .chatbot-container {
+        font-family: 'Inter', sans-serif;
+        display: flex;
+        flex-direction: column;
+        height: 600px; /* Altura fija para el contenedor del chat */
+        max-width: 100%; /* Asegura que se adapte al ancho del módulo de HubSpot */
+        margin: 0 auto;
+        border: 1px solid #e0e0e0;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        background-color: #f9f9f9;
+    }
+
+    /* Encabezado del chat */
+    .chat-header {
+        background-color: #2c3e50; /* Azul oscuro */
+        color: #ffffff;
+        padding: 15px 20px;
+        text-align: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        border-bottom: 1px solid #243340;
+    }
+
+    /* Área de mensajes */
+    .chat-messages {
+        flex-grow: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background-color: #eef2f6; /* Fondo de mensajes más claro */
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    /* Estilos para burbujas de mensaje */
+    .message-bubble {
+        max-width: 75%;
+        padding: 12px 18px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        line-height: 1.5;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .message-user {
+        align-self: flex-end;
+        background-color: #5d9cec; /* Azul vibrante */
+        color: #ffffff;
+        border-bottom-right-radius: 4px; /* Pequeño ajuste para la esquina */
+    }
+
+    .message-ai {
+        align-self: flex-start;
+        background-color: #ffffff;
+        color: #333333;
+        border-bottom-left-radius: 4px; /* Pequeño ajuste para la esquina */
+    }
+
+    .message-disclaimer {
+        font-size: 0.75rem;
+        color: #7f8c8d;
+        margin-top: 8px;
+        font-style: italic;
+        line-height: 1.3;
+    }
+
+    /* Área de entrada de texto */
+    .chat-input-area {
+        display: flex;
+        padding: 15px 20px;
+        background-color: #ffffff;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    .chat-input-area input[type="text"] {
+        flex-grow: 1;
+        padding: 12px 15px;
+        border: 1px solid #dcdfe6;
+        border-radius: 25px; /* Bordes más redondeados para el input */
+        font-size: 1rem;
+        outline: none;
+        margin-right: 10px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .chat-input-area input[type="text"]:focus {
+        border-color: #5d9cec;
+        box-shadow: 0 0 0 3px rgba(93, 156, 236, 0.2);
+    }
+
+    .chat-input-area button {
+        background-color: #5d9cec;
+        color: #ffffff;
+        border: none;
+        border-radius: 25px; /* Bordes más redondeados para el botón */
+        padding: 12px 20px;
+        font-size: 1rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: background-color 0.2s ease, transform 0.1s ease;
+        box-shadow: 0 2px 8px rgba(93, 156, 236, 0.3);
+    }
+
+    .chat-input-area button:hover {
+        background-color: #4a89dc;
+        transform: translateY(-1px);
+    }
+
+    .chat-input-area button:active {
+        transform: translateY(0);
+        box-shadow: 0 1px 4px rgba(93, 156, 236, 0.4);
+    }
+
+    /* Loading Spinner */
+    .loading-spinner {
+        border: 3px solid #f3f3f3; /* Light grey */
+        border-top: 3px solid #3498db; /* Blue */
+        border-radius: 50%;
+        width: 16px;
+        height: 16px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+
+    /* Responsividad */
+    @media (max-width: 768px) {
+        .chatbot-container {
+            height: 500px;
+            border-radius: 8px;
+        }
+        .chat-header {
+            font-size: 1.1rem;
+            padding: 12px 15px;
+        }
+        .chat-messages {
+            padding: 15px;
+            gap: 10px;
+        }
+        .message-bubble {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+        .chat-input-area {
+            padding: 10px 15px;
+        }
+        .chat-input-area input[type="text"] {
+            padding: 10px 12px;
+            font-size: 0.9rem;
+        }
+        .chat-input-area button {
+            padding: 10px 15px;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 480px) {
+        .chatbot-container {
+            height: 450px;
+        }
+        .chat-header {
+            font-size: 1rem;
+            padding: 10px;
+        }
+        .chat-messages {
+            padding: 10px;
+        }
+        .message-bubble {
+            max-width: 90%;
+            font-size: 0.85rem;
+        }
+        .chat-input-area {
+            flex-direction: column;
+            gap: 10px;
+            padding: 10px;
+        }
+        .chat-input-area input[type="text"] {
+            margin-right: 0;
+            width: 100%;
+        }
+        .chat-input-area button {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="chatbot-container">
+    <div class="chat-header">Asistente Legal LEXCORE</div>
+
+    <div class="chat-messages" id="chatMessages">
+        <!-- Mensaje de bienvenida del bot -->
+        <div class="message-bubble message-ai">
+            ¡Hola! Soy tu asistente legal de LEXCORE. ¿En qué puedo ayudarte hoy?
+        </div>
+    </div>
+
+    <div class="chat-input-area">
+        <input type="text" id="chatInput" placeholder="Escribe tu consulta legal aquí..." />
+        <button onclick="sendMessage()">Enviar</button>
+    </div>
+</div>
+
+<script>
+    const chatInput = document.getElementById('chatInput');
+    const chatMessages = document.getElementById('chatMessages');
+
+    function appendMessage(sender, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.classList.add('message-bubble');
+        messageDiv.classList.add(sender === 'user' ? 'message-user' : 'message-ai');
+
+        // Dividir el texto por saltos de línea para manejar el descargo de responsabilidad
+        const lines = text.split('\n');
+        lines.forEach(line => {
+            const p = document.createElement('p');
+            if (line.startsWith('---')) {
+                p.classList.add('message-disclaimer');
+                p.textContent = line.substring(3).trim(); // Eliminar los "---"
+            } else {
+                p.textContent = line;
+            }
+            messageDiv.appendChild(p);
+        });
+        
+        chatMessages.appendChild(messageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight; // Desplazar al final
+    }
+
+    // Hardcoded knowledge base (simulating articles/FAQs)
+    const knowledgeBase = [
+        {
+            query: "pensión alimenticia",
+            keywords: ["pensión", "alimentos", "alimenticia", "hijos", "manutención"],
+            response: "La pensión alimenticia en Ecuador es un derecho de los niños, niñas y adolescentes a recibir lo necesario para su desarrollo integral. Se calcula en base a las tablas emitidas por el Consejo de la Judicatura, considerando el ingreso del alimentante, el número de hijos y sus edades, y si existe alguna discapacidad. ¿Necesitas saber cómo se calcula o qué documentos se requieren?"
+        },
+        {
+            query: "divorcio",
+            keywords: ["divorcio", "separación", "matrimonio", "unión de hecho"],
+            response: "En Ecuador, existen varias formas de divorcio: por mutuo consentimiento (en notaría o judicial) y por causal (judicial). El proceso y los requisitos varían según el tipo. ¿Te interesa conocer los requisitos para un divorcio por mutuo consentimiento o por causal?"
+        },
+        {
+            query: "arriendos",
+            keywords: ["arriendo", "alquiler", "contrato de arriendo", "inquilino", "arrendador", "desahucio"],
+            response: "El contrato de arriendo en Ecuador se rige por la Ley de Inquilinato. Es fundamental que sea por escrito para establecer los derechos y obligaciones de arrendador e inquilino. Aspectos clave incluyen el plazo, el valor del arriendo y las condiciones de terminación. ¿Tienes dudas sobre cómo redactar un contrato o sobre el proceso de desahucio?"
+        },
+        {
+            query: "herencias",
+            keywords: ["herencia", "testamento", "sucesión", "bienes", "fallecido"],
+            response: "Las herencias en Ecuador se regulan por el Código Civil. Pueden ser testadas (con testamento) o intestadas (sin testamento). Es un proceso que implica la transferencia de bienes y derechos del fallecido a sus herederos. ¿Quieres saber más sobre cómo se distribuye una herencia o qué hacer si no hay testamento?"
+        },
+        {
+            query: "contratos básicos",
+            keywords: ["contrato", "acuerdo", "compraventa", "préstamo", "servicio"],
+            response: "Los contratos son acuerdos de voluntades que crean obligaciones. En Ecuador, los contratos básicos como compraventa, préstamo, o prestación de servicios, deben cumplir con ciertos requisitos legales para ser válidos. La claridad en las cláusulas es fundamental para evitar futuros conflictos. ¿Buscas un modelo de contrato o quieres entender alguna cláusula específica?"
+        },
+        {
+            query: "notarías y trámites civiles",
+            keywords: ["notaría", "trámites", "escritura", "poder", "declaración juramentada", "matrimonio civil"],
+            response: "Las notarías en Ecuador son instituciones públicas que autentican y dan fe de actos y contratos. Puedes realizar una variedad de trámites civiles como matrimonios, divorcios por mutuo acuerdo, poderes, declaraciones juramentadas, y protocolización de documentos. ¿Qué tipo de trámite te interesa realizar en una notaría?"
+        },
+        {
+            query: "agendar asesoría",
+            keywords: ["asesoría", "cita", "agendar", "contacto", "hablar con abogado"],
+            response: "¡Claro! Para agendar una asesoría personalizada con un abogado de LEXCORE, puedes visitar nuestra sección de contacto en la web o enviarnos un mensaje por WhatsApp. Estaremos encantados de ayudarte. ¿Te gustaría que te redirija a nuestra página de contacto?"
+        },
+        {
+            query: "contactar",
+            keywords: ["contacto", "llamar", "email", "whatsapp"],
+            response: "Puedes contactar a LEXCORE a través de nuestra página web oficial, donde encontrarás nuestros números de teléfono y formulario de contacto. También estamos disponibles por WhatsApp para consultas rápidas. ¿Te doy el enlace a nuestra página de contacto?"
+        }
+    ];
+
+    async function simulateBotResponse(userMessageText) {
+        const chatInput = document.getElementById('chatInput');
+        const sendButton = document.querySelector('.chat-input-area button');
+
+        chatInput.disabled = true; // Deshabilitar input
+        sendButton.disabled = true; // Deshabilitar botón
+
+        // Añadir mensaje de carga
+        const loadingMessageDiv = document.createElement('div');
+        loadingMessageDiv.classList.add('message-bubble', 'message-ai');
+        loadingMessageDiv.innerHTML = `<div style="display:flex; align-items:center;"><div class="loading-spinner" style="margin-right: 8px;"></div><span>Escribiendo...</span></div>`;
+        chatMessages.appendChild(loadingMessageDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        let aiResponseText = "";
+        let foundInKB = false;
+
+        const userMessageLower = userMessageText.toLowerCase();
+
+        // 1. Verificar base de conocimiento predefinida
+        for (const item of knowledgeBase) {
+            const matchedKeyword = item.keywords.find(keyword => userMessageLower.includes(keyword));
+            if (matchedKeyword) {
+                aiResponseText = item.response;
+                foundInKB = true;
+                break;
+            }
+        }
+
+        // 2. Si no se encontró en la base de conocimiento, llamar a la API de Gemini
+        if (!foundInKB) {
+            try {
+                const prompt = `Actúa como un asistente legal básico para LEXCORE en Ecuador. Responde a la siguiente consulta de forma clara, simple y refiriéndote al marco legal ecuatoriano si es posible. No des opiniones legales vinculantes, solo informa y redirige si es necesario. Si no tienes información clara, sugiere contactar a LEXCORE.
+                Consulta del usuario: "${userMessageText}"`;
+
+                const payload = {
+                    contents: [{ role: "user", parts: [{ text: prompt }] }],
+                };
+
+                const apiKey = ""; // Canvas proporcionará esto en tiempo de ejecución
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const result = await response.json();
+
+                if (result.candidates && result.candidates.length > 0 &&
+                    result.candidates[0].content && result.candidates[0].content.parts &&
+                    result.candidates[0].content.parts.length > 0) {
+                    aiResponseText = result.candidates[0].content.parts[0].text;
+                } else {
+                    aiResponseText = "Lo siento, no pude generar una respuesta en este momento. Por favor, inténtalo de nuevo más tarde o contacta a LEXCORE directamente.";
+                }
+            } catch (error) {
+                console.error("Error al llamar a la API de Gemini:", error);
+                aiResponseText = "Hubo un problema al conectar con el asistente. Por favor, inténtalo de nuevo más tarde o contacta a LEXCORE directamente.";
+            }
+        }
+
+        // Eliminar mensaje de carga
+        chatMessages.removeChild(loadingMessageDiv);
+
+        // Añadir descargo de responsabilidad a todas las respuestas de la IA
+        aiResponseText += "\n\n---\n*Este bot es un asistente informativo y no constituye asesoría legal vinculante. Para una consulta personalizada, por favor, contacta a LEXCORE.*";
+
+        appendMessage('ai', aiResponseText);
+        chatInput.disabled = false; // Habilitar input
+        sendButton.disabled = false; // Habilitar botón
+        chatInput.focus(); // Enfocar input después de la respuesta
+    }
+
+    function sendMessage() {
+        const userText = chatInput.value.trim();
+        if (userText === '') return;
+
+        appendMessage('user', userText);
+        chatInput.value = ''; // Limpiar el input
+
+        simulateBotResponse(userText); // Llamar a la función asíncrona
+    }
+
+    // Permitir enviar mensaje con la tecla Enter
+    chatInput.addEventListener('keypress', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+    // Asegurarse de que el input esté enfocado al cargar la página (opcional)
+    window.onload = function() {
+        chatInput.focus();
+    };
+</script>
